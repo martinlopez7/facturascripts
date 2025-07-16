@@ -490,6 +490,9 @@ abstract class BusinessDocument extends ModelOnChangeClass
             case 'numero':
                 BusinessDocumentCode::setNewCode($this, false);
                 break;
+            case 'codigo':
+                // No generamos automáticamente un nuevo código, solo permitimos el cambio manual
+                break;
         }
 
         return parent::onChange($field);
@@ -527,7 +530,7 @@ abstract class BusinessDocument extends ModelOnChangeClass
     {
         $more = [
             'codalmacen', 'coddivisa', 'codpago', 'codserie', 'fecha', 'hora', 'idempresa', 'numero',
-            'operacion', 'total'
+            'operacion', 'total', 'codigo' // <-- añadimos 'codigo' aquí
         ];
         parent::setPreviousData(array_merge($more, $fields));
     }

@@ -86,6 +86,18 @@ class SalesHeaderHTML
             return;
         }
 
+        // Aceptar el valor de 'codigo' si viene del formulario
+        if (isset($formData['codigo'])) {
+            if ($model->codigo !== $formData['codigo']) {
+                // Si existe un método público para notificar el cambio, usarlo. Si no, solo asignar el valor.
+                $model->codigo = $formData['codigo'];
+                if (method_exists($model, 'notifyChange')) {
+                    $model->notifyChange('codigo');
+                }
+                // Si no existe, confiar en la lógica de guardado y setPreviousData.
+            }
+        }
+
         $model->setWarehouse($formData['codalmacen'] ?? $model->codalmacen);
         $model->cifnif = $formData['cifnif'] ?? $model->cifnif;
         $model->codcliente = $formData['codcliente'] ?? $model->codcliente;
@@ -164,6 +176,7 @@ class SalesHeaderHTML
     {
         return '<div class="container-fluid">'
             . '<div class="row g-3 align-items-end">'
+            . self::renderField($model, 'codigo') // <-- Añadimos el campo código al principio
             . self::renderField($model, 'codcliente')
             . self::renderField($model, 'codalmacen')
             . self::renderField($model, 'codserie')
@@ -530,6 +543,9 @@ class SalesHeaderHTML
         }
 
         switch ($field) {
+            case 'codigo':
+                return self::codigo($model);
+
             case '_children':
                 return self::children($model);
 
@@ -715,5 +731,20 @@ class SalesHeaderHTML
             }
         }
         return $html;
+    }
+
+    // Añadimos la función para renderizar el campo 'codigo' con botón de guardar
+    private static function codigo(SalesDocument $model): string
+    {
+        $attributes = $model->editable ? 'name="codigo" maxlength="50" autocomplete="off"' : 'disabled=""';
+        $input = '<input type="text" ' . $attributes . ' value="' . Tools::noHtml($model->codigo) . '" class="form-control"/>';
+        $button = $model->editable ?
+            '<button class="btn btn-outline-success ms-1" type="button" title="' . Tools::lang()->trans('save') . '" onclick="return salesFormSave(\'save-doc\', 0);"><i class="fa-solid fa-floppy-disk"></i></button>' :
+            '';
+        return '<div class="col-sm-2 col-lg-2">'
+            . '<div class="mb-3">' . Tools::lang()->trans('code')
+            . '<div class="input-group">' . $input . $button . '</div>'
+            . '</div>'
+            . '</div>';
     }
 }
